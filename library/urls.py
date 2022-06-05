@@ -18,11 +18,13 @@ from django.urls import include, path
 from rest_framework import routers
 from books.api.viewsets import BooksViewSets
 from users.api.viewsets import UsersViewSets
+from loans.api.viewsets import LoansViewSet
 
 routes = routers.DefaultRouter()
 
 routes.register(r'books', BooksViewSets, basename="Books")
 routes.register(r'users', UsersViewSets, basename="Users")
+routes.register(r'loans', LoansViewSet, basename='Loans')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
