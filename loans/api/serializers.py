@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from loans import models
-from exceptions.books import NoBook
+from exceptions.books import NoBook, NotAvailable
+from exceptions.users import CantGet
 from books.models import Books
 
 class LoansSerializers(serializers.ModelSerializer):
@@ -10,10 +11,16 @@ class LoansSerializers(serializers.ModelSerializer):
         model = models.Loans
         fields = '__all__'
     def create(self, validated_data):
-        book = Books.objects.filter(pk=validated_data['book'].id)
-        book_quantity = book.values()[0]['quantity'] 
+        books = Books.objects.filter(pk=validated_data['book'].id)
+        borrowed_books = models.Loans.objects.filter(user=validated_data['user'].id, returned=False).count()
+        book = books.values()[0]
+        book_quantity = book['quantity'] 
         if book_quantity <= 0:
             raise NoBook()
+        if not book['available']:
+            raise NotAvailable()
+        if borrowed_books >= 3:
+            raise CantGet()
         book.update(quantity=book_quantity-1)
         return super().create(validated_data)
     def to_representation(self, instance):
